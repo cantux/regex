@@ -114,12 +114,8 @@ class NFA:
                 left = s.pop()
                 s.append(NFA.concat(left, right))
             else:
-                # case where we see a char
-#                 res = []
-#                 if c == ".":
-#                     for x in range(48,57):
-#                         res.append(chr(x))                
                 s.append(NFA.create(c))
+
         return s.pop()
 
     @staticmethod
@@ -144,6 +140,8 @@ class NFA:
             for state in previous:
                 if c in state.transitions:
                     NFA.eps_closure(state.transitions[c], current)
+                elif "." in state.transitions:
+                    NFA.eps_closure(state.transitions[","], current)
         return any([c.accept for c in current])
 
     @staticmethod
@@ -235,6 +233,8 @@ class DFA:
         for c in word:
             if curr in dfa_graph and c in dfa_graph[curr]:
                 curr = dfa_graph[curr][c]
+            elif curr in dfa_graph and "." in dfa_graph[curr]:
+                curr = dfa_graph[curr]["."]
             else:
                 return False
         return curr in accepts
@@ -271,16 +271,17 @@ class Regex:
         precedence = {"*": 50, "+": 50, "?": 50, "|": 40, ":": 40}
         def isChar(c):
             ordnl = ord(c)
-            return (48 <= ordnl <= 57) or (65 <= ordnl <= 90) or (97 <= ordnl <= 122)
+            return (48 <= ordnl <= 57) or (65 <= ordnl <= 90) or (97 <= ordnl <= 122) or c =="."
         def isMetaChar(c):
-            return c in "*+?|:.^$(){}[-]"
+            return c in "*+?|:^$(){}[-]"
         def preproc(infix):
             preproc_ptrn = []
             i = 1
             while i < len(infix):
-                if (isChar(infix[i - 1]) and isChar(infix[i])) \
-                        or (infix[i] == "(") \
-                        or (infix[i - 1] == ")" and isChar(infix[i])):
+                prev, curr = infix[i -1], infix[i]
+                if ((isChar(prev) or prev in "+?*") and isChar(curr)) \
+                        or (curr == "(" and prev != "(") \
+                        or (prev == ")" and isChar(curr)):
                     preproc_ptrn.append(infix[i - 1])
                     preproc_ptrn.append(":")
                 else:
@@ -293,7 +294,7 @@ class Regex:
         for c in infix_preproc_ptrn:
             if isChar(c):
                 postfix_ptrn.append(c)
-            if c == "(":
+            elif c == "(":
                 op_s.append(c)
             elif c == ")":
                 while op_s[-1] != "(":
@@ -321,95 +322,10 @@ class Regex:
     def visualize_dfa(self):
         DFA.visualize_dfa(self.dfa_graph, self.dfa_accepts).view()  
     
+import tests
 def test():
-#     r8 = Regex("ab*")
-#     r8.visualize_nfa()
-#     assert r8.dfa_match("a")
-#     assert r8.dfa_match("ab")
-#     assert r8.dfa_match("abb")
-#     r2 = Regex("a")
-#     assert r2.dfa_match("a")
-#     assert not r2.dfa_match("")
-#     assert not r2.dfa_match("aa")
-#     assert not r2.dfa_match("b")
-#     r3 = Regex("a*")
-#     assert r3.dfa_match("aa")
-#     assert not r3.dfa_match("b")
-#     assert r3.dfa_match("")
-#     assert r3.dfa_match("a")
-#     r4 = Regex("a|b")
-#     assert not r4.dfa_match("ab")
-#     assert not r4.dfa_match("")
-#     assert r4.dfa_match("a")
-#     assert r4.dfa_match("b")
-#     r5 = Regex("ab")
-#     r8.visualize_nfa()
-#     r5.visualize_dfa()
-#     assert r5.dfa_match("ab")
-#     assert not r5.dfa_match("")
-#     assert not r5.dfa_match("a")
-#     assert not r5.dfa_match("b")
-#     r6 = Regex("((a|b)c)*")
-#     assert r6.dfa_match("")
-#     assert r6.dfa_match("ac")
-#     assert r6.dfa_match("bc")
-#     assert r6.dfa_match("acac")
-#     assert r6.dfa_match("acbc")
-#     assert not r6.dfa_match("ab")
-#     assert not r6.dfa_match("a")
-#     assert not r6.dfa_match("b")
-#     r7 = Regex("a(b|c)*")
-#     assert r7.dfa_match("a")
-#     assert r7.dfa_match("ac")
-#     assert r7.dfa_match("acc")
-#     assert r7.dfa_match("abbb")
-#     assert not r7.dfa_match("bc")
-#     assert not r7.dfa_match("bcc")   
-#     r8 = Regex("a*(b?|c+)*")
-#     r8.visualize_nfa()
-#     r8.visualize_dfa()
-#     assert r8.dfa_match("")
-#     assert r8.dfa_match("a")
-#     assert r8.dfa_match("b")
-#     assert r8.dfa_match("c")
-#     assert r8.dfa_match("ab")
-#     assert r8.dfa_match("ac")
-#     assert r8.dfa_match("bb") # tricky, can be closure of 0or1
-#     assert r8.dfa_match("cc")
-#     assert r8.dfa_match("aab")
-#     assert r8.dfa_match("abb")
-#     assert r8.dfa_match("acc")
-#     assert r8.dfa_match("aabb")
-#     assert r8.dfa_match("aacc")
-#     assert r8.dfa_match("bc")
-#     assert r8.dfa_match("cb")
-#     assert r8.dfa_match("abc")
-#     assert r8.dfa_match("acb")
-#     assert r8.dfa_match("ccb")
-#     assert r8.dfa_match("bbc")
-#     r9 = Regex("a?")
-#     r9.visualize_nfa()
-#     assert r9.dfa_match("")
-#     assert r9.dfa_match("a")
-#     assert not r9.dfa_match("aa")
-#     assert not r9.dfa_match("b")
-#     assert not r9.dfa_match("ab")
-#     assert not r9.dfa_match("ba")
-#     r10 = Regex("a+")
-#     r10.visualize_nfa()
-#     assert r10.dfa_match("a")
-#     assert r10.dfa_match("aa")
-#     assert not r10.dfa_match("")
-#     assert not r10.dfa_match("b")
-#     assert not r10.dfa_match("ab")
-#     assert not r10.dfa_match("ba")
-    r11 = Regex("(a|b)*")
-    r11.visualize_dfa()
-    assert r11.dfa_match("ab")
-    assert r11.dfa_match("abababba")
-    assert r11.dfa_match("")
-    assert r11.dfa_match("a")
-    assert r11.dfa_match("b")
+    tests.v1_dfa_tests()
+    tests.wildcard_tests()
 
 if __name__ == "__main__":
     test()
