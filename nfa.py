@@ -13,10 +13,6 @@ class State:
         self.st_inc_id = State.st_inc_id
         self.debug_info = []
 
-    def __str__(self):
-        return "id: " + str(self.st_inc_id) +\
-                "\ntransitions: " + str(self.transitions) +\
-                "\nepsilon_ts: " + "".join([str(x) for x in self.e_transitions])
 
 class NFA:
     @staticmethod
@@ -209,21 +205,21 @@ class DFA:
                 seen.add(curr_states)
                 # print(DFA.get_key_str(curr_states))
                 # from the current aggregate set of states, find all possible next states
-                sym_dct = defaultdict(set)
+                symbol_dct = defaultdict(set)
                 for c_state in curr_states:
-                    for sym, nxt_st in c_state.transitions.items():
+                    for symbol, nxt_st in c_state.transitions.items():
                         eps_reachable = set()           
                         NFA.eps_closure(nxt_st, eps_reachable)
-                        sym_dct[sym].update(eps_reachable)
+                        symbol_dct[symbol].update(eps_reachable)
 
                 # for every transition record it into the DFA and accepts
-                for sym, set_of_states in sym_dct.items():
+                for symbol, set_of_states in symbol_dct.items():
                     next_key = DFA.create_key(set_of_states)
                     for s in set_of_states:
                         if s.accept:
                             accepts.add(next_key)
                             break
-                    dfa_graph[curr_states][sym] = next_key
+                    dfa_graph[curr_states][symbol] = next_key
                     q.append(next_key)
         return dfa_graph, start_state, accepts 
 

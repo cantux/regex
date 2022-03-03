@@ -36,13 +36,13 @@ def wildcard_tests():
     assert r6.dfa_match("xa")
     assert r6.dfa_match("zza")
     assert not r6.dfa_match("")
-    r7 = Regex("(.+)a")
+    r7 = Regex(".+a")
 #     r7.visualize_nfa()
     r7.visualize_dfa()
     assert r7.dfa_match("xa")
     assert r7.dfa_match("za")
     assert r7.dfa_match("zza")
-    assert r7.dfa_match("zaa")
+    assert not r7.dfa_match("zaa")
     assert not r7.dfa_match("a")
 
 
